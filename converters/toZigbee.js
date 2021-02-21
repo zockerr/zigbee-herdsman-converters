@@ -1030,18 +1030,15 @@ const converters = {
          */
         key: ['color', 'color_temp', 'color_temp_percent'],
         convertSet: async (entity, key, value, meta) => {
+            let result;
             if (key == 'color') {
-                const result = await converters.light_color.convertSet(entity, key, value, meta);
-                if (result.state && result.state.color.hasOwnProperty('x') && result.state.color.hasOwnProperty('y')) {
-                    result.state.color_temp = utils.xyToMireds(result.state.color.x, result.state.color.y);
-                }
-
-                return result;
+                result = await converters.light_color.convertSet(entity, key, value, meta);
             } else if (key == 'color_temp' || key == 'color_temp_percent') {
-                const result = await converters.light_colortemp.convertSet(entity, key, value, meta);
-                result.state.color = utils.miredsToXY(result.state.color_temp);
-                return result;
+                result = await converters.light_colortemp.convertSet(entity, key, value, meta);
             }
+
+            utils.applyColorMode(result, meta);
+            return result;
         },
         convertGet: async (entity, key, meta) => {
             if (key == 'color') {
